@@ -5,9 +5,23 @@
     <title>Zendesk Coding Challegne</title>
 </head>
 <body>
-    <h1>Zendesk Tickets</h1>
-    {% for ticket in tickets %}
-        <p>ID: {{ticket.id}} Title: {{ticket.subject}}</p>
-    {% endfor %}
+    <h1>Zendesk Ticket Viewer</h1>
+    {% if statusCode == 200 %}
+    <h2>There are {{ numTickets }} total tickets. You can currently see 25 tickets per page. </h2>
+    <h2>You are on page {{pageNum}}</h2>
+        {% for ticket in tickets %}
+            <p>ID: {{ticket.id}} Title: {{ticket.subject}}</p>
+        {% endfor %}
+    {% if pageNum != 1 %}
+        <form method="POST" action="/{{pageNum - 1}}">
+            <input type="submit" value="previous">
+        </form>
+    {% endif %}
+    <form method="POST" action="/{{pageNum + 1}}">
+        <input type="submit" value="next">
+    </form>
+    {% else %}
+        <p>Whoops! It looks like something went wrong!</p>
+    {% endif %}
 </body>
 </html>
