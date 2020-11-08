@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Zendesk Coding Challegne</title>
+</head>
+<body>
+    <h1>Zendesk Tickets</h1>
+    {% for ticket in tickets %}
+        <p>ID: {{ticket.id}} Title: {{ticket.subject}}</p>
+    {% endfor %}
+</body>
+</html>
