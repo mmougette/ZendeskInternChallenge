@@ -22,6 +22,7 @@ def home():
     session['subdomain'] = 'mougette'
     session['user'] = 'mougette@wisc.edu'
     session['pswd'] = '***********' ## Temp password for GitHub
+    session['url'] = 'https://' + session['subdomain'] + '.zendesk.com/api/v2/tickets.json?page[size]=25'
 
     ## Call the Zendesk API for tickets and count.json
     response = getResponse()
@@ -69,8 +70,23 @@ def pages(page_id):
         return render_template('page.html', statusCode=session['statusCode'], tickets=tickets,
                                numTickets=session['count'], pageNum=session['pageNum'])
 
-    return "Whoopsie!!"
+    return "Whoopsie!! It looks like you might be lost!"
 
+@app.route('/ticket/<int:ticket_id>',  methods=['GET', 'POST'])
+def tickets(ticket_id):
+    if request.method == 'POST':
+        url = session['url']
+        user = session['user']
+        pswd = session['pswd']
+        response = requests.get(url, auth=(user, pswd))
+        jsonResponse = response.json()
+        tickets = jsonResponse['tickets']
+        for ticket in tickets:
+            if (ticket['id'] == ticket_id):
+                ## temp return -
+                return render_template('ticket.html', ticket=ticket)
+
+    return "Whoops! It looks like you might be lost!"
 
 def getResponse():
     ## Set up the data needed for the Zendesk API request
@@ -103,6 +119,7 @@ def getNextResponse(jsonResponse):
     hasMore = jsonResponse['meta']['has_more']
     if (hasMore):
         nextUrl = jsonResponse['links']['next']
+        session['url'] = nextUrl
         response = requests.get(nextUrl, auth=(user, pswd))
         nextJsonResponse = response.json()
         session['statusCode'] = response.status_code

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Zendesk Coding Challegne</title>
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/styles.css') }}">
 </head>
 <body>
     <h1>Zendesk Ticket Viewer</h1>
@@ -10,7 +11,14 @@
     <h2>There are {{ numTickets }} total tickets. You can currently see 25 tickets per page. </h2>
     <h2>You are on page {{pageNum}}</h2>
         {% for ticket in tickets %}
-            <p>ID: {{ticket.id}} Title: {{ticket.subject}}</p>
+
+        <form method="POST" action="/ticket/{{ticket.id}}">
+            <div class="ticket">
+                    <p>ID: {{ticket.id}} Title: {{ticket.subject}}</p>
+                    <input class="button" type="submit" value="Open Ticket">
+            </div>
+        </form>
+
         {% endfor %}
     {% if pageNum != 1 %}
         <form method="POST" action="/{{pageNum - 1}}">

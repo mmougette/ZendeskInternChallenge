@@ -1,0 +1,37 @@
+html {
+  font-family: sans-serif;
+  background: dimgrey;
+  padding: 1rem;
+}
+
+body {
+  margin: 0 auto;
+  background: dimgrey;
+    text-align: center;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: serif;
+  color: #003399;
+  margin: 1rem 0;
+}
+p {
+    text-align: left;
+}
+
+.ticket {
+    background-color: #7094db;
+  color: black;
+  border: 2px solid black;
+    max-width: 500px;
+    padding: 20px;
+    margin: auto;
+    margin-bottom: 15px;
+    border-radius: 20px;
+}
+.ticket:hover{
+    background-color: #4775d1;
+}
+.button:hover{
+    cursor: pointer;
+}
