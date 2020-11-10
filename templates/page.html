@@ -6,30 +6,34 @@
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/styles.css') }}">
 </head>
 <body>
-    <h1>Zendesk Ticket Viewer</h1>
+    <div class="title">
+        <h1>Zendesk Ticket Viewer</h1>
+    </div>
     {% if statusCode == 200 %}
-    <h2>There are {{ numTickets }} total tickets. You can currently see 25 tickets per page. </h2>
+    <h2>There are {{ numTickets }} total tickets. You can see up to 25 tickets per page. </h2>
     <h2>You are on page {{pageNum}}</h2>
         {% for ticket in tickets %}
 
         <form method="POST" action="/ticket/{{ticket.id}}">
             <div class="ticket">
-                    <p>ID: {{ticket.id}} Title: {{ticket.subject}}</p>
-                    <input class="button" type="submit" value="Open Ticket">
+                <pre class="tab">Status: {{ticket.status}}    Priority: {{ticket.priority}}   ID: {{ticket.id}}   Opened on: {{ticket.created_at}}</pre>
+                <pre class="tab">Title: {{ticket.subject}}</pre>
+                <input class="button" type="submit" value="Open Ticket">
             </div>
         </form>
-
         {% endfor %}
-    {% if pageNum != 1 %}
-        <form method="POST" action="/{{pageNum - 1}}">
-            <input type="submit" value="previous">
+        {% if pageNum > 1 %}
+            <form method="POST" action="/{{pageNum - 1}}">
+                <input type="submit" value="previous">
+            </form>
+        {% endif %}
+        {% if hasMore %}
+        <form method="POST" action="/{{pageNum + 1}}">
+            <input type="submit" value="next">
         </form>
-    {% endif %}
-    <form method="POST" action="/{{pageNum + 1}}">
-        <input type="submit" value="next">
-    </form>
+        {% endif %}
     {% else %}
-        <p>Whoops! It looks like something went wrong!</p>
+        <p>Whoops! It looks like something went wrong! Please try again later.</p>
     {% endif %}
 </body>
 </html>

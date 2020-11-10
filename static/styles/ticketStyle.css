@@ -12,38 +12,30 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: serif;
-  color: #003399;
+  color: black;
   margin: 1rem 0;
 }
 p {
     text-align: left;
-    tab-size: 8;
 }
-
 .ticket {
     background-color: #7094db;
   color: black;
   border: 2px solid black;
-    min-width: 800px;
-    max-height: 125px;
-    padding: 20px;
-    padding-top: 5px;
+    max-width: 750px;
+    padding: 200px;
     margin: auto;
-    margin-bottom: 5px;
+    margin-bottom: 15px;
     border-radius: 20px;
 }
-.ticket:hover{
-    background-color: #4775d1;
-}
-.button:hover{
-    cursor: pointer;
-}
 
-.title {
+.content {
     background-color: whitesmoke;
-    width: auto;
-}
-
-.tab {
-    tab-size: 12;
+    border: 2px solid black;
+    max-width: 650px;
+    max-height: 500px;
+    padding: 40px;
+    text-align: -moz-left;
+    margin-bottom: 15px;
+    border-radius: 20px;
 }

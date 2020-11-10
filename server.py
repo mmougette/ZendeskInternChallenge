@@ -2,6 +2,12 @@
 Author:     Maxwell Mougette
 Contact:    mougette@wisc.edu
 This project was made for the Zendesk Intern Coding Challenge.
+
+TODO:
+- Add more detailed error messages
+- Add tests
+
+
 '''
 
 import requests
@@ -17,58 +23,52 @@ app.secret_key = "Max Is Awesome"
 
 @app.route('/')
 def home():
-    ## Secure cookies to store repeatitly used vars
+    ## Sessions to store repeatitly used vars
     session['pageNum'] = 1
     session['subdomain'] = 'mougette'
-    session['user'] = 'mougette@wisc.edu'
-    session['pswd'] = '***********' ## Temp password for GitHub
+    session['basic'] = 'YOUR_BASE64_AUTH' ## PLACE HOLDER FOR GITHUB
     session['url'] = 'https://' + session['subdomain'] + '.zendesk.com/api/v2/tickets.json?page[size]=25'
+    session['nextURL'] = ''
+    session['prevURL'] = ''
 
     ## Call the Zendesk API for tickets and count.json
-    response = getResponse()
+    response = getResponse(session['url'])
     jsonResponse = response.json()
     countResponse = getCountResponse()
-
     countJsonResponse = countResponse.json()
     statusCode = response.status_code
     tickets = jsonResponse['tickets']
     numTickets = countJsonResponse['count']['value']
 
     ## more sessions that can now be made after the response
-    session['statusCode'] = response.status_code
+    ##session['statusCode'] = response.status_code
     session['count'] = numTickets
+    ##session['hasMore'] = jsonResponse['meta']['has_more']
 
     return render_template('page.html', statusCode = session['statusCode'], tickets = tickets,
-                           numTickets = session['count'], pageNum = session['pageNum'])
+                           numTickets = session['count'], pageNum = session['pageNum'], hasMore = session['hasMore'])
 
 @app.route('/<int:page_id>',  methods=['GET', 'POST'])
 def pages(page_id):
     if request.method == 'POST':
 
         if (int(page_id) > session['pageNum']):
-            response = getResponse()
-            jsonResponse = response.json()
-            i = 1
-            while (i < int(page_id)):
+            response = getResponse(session['nextURL'])
 
-                jsonResponse = getNextResponse(jsonResponse)
-                statusCode = session['statusCode']
-                i += 1
+        elif(int(page_id) == session['pageNum']):
+            response = getResponse(session['url'])
 
         else:
-            response = getResponse()
-            jsonResponse = response.json()
-            i = 1
-            while (i < int(page_id)):
-                jsonResponse = getNextResponse(jsonResponse)
-                statusCode = session['statusCode']
-                i += 1
+            response = getResponse(session['prevURL'])
 
+        if (response == None):
+            return "Whoops! It looks like someone's lost!"
+        jsonResponse = response.json()
         session['pageNum'] = page_id
         tickets = jsonResponse['tickets']
 
         return render_template('page.html', statusCode=session['statusCode'], tickets=tickets,
-                               numTickets=session['count'], pageNum=session['pageNum'])
+                               numTickets=session['count'], pageNum=session['pageNum'], hasMore = session['hasMore'])
 
     return "Whoopsie!! It looks like you might be lost!"
 
@@ -78,53 +78,48 @@ def tickets(ticket_id):
         url = session['url']
         user = session['user']
         pswd = session['pswd']
-        response = requests.get(url, auth=(user, pswd))
+        response = requests.get(session['url'], headers={'Authorization': 'Basic ' + session['basic']})
         jsonResponse = response.json()
         tickets = jsonResponse['tickets']
         for ticket in tickets:
             if (ticket['id'] == ticket_id):
                 ## temp return -
-                return render_template('ticket.html', ticket=ticket)
+                return render_template('ticket.html', ticket=ticket, pageNum=session['pageNum'])
 
     return "Whoops! It looks like you might be lost!"
 
-def getResponse():
-    ## Set up the data needed for the Zendesk API request
-    subdomain = session['subdomain']
-    user = session['user']
-    pswd = session['pswd']
-    url = 'https://' + subdomain + '.zendesk.com/api/v2/tickets.json?page[size]=25'
+def getResponse(url):
+    ## Check that the response is valid
+    try:
+        response = requests.get(url, headers={'Authorization': 'Basic ' + session['basic']})
+    except requests.exceptions.MissingSchema:
+        return None
+    ## Make sure the response is a json
+    try:
+        jsonResponse = response.json()
+    except ValueError:
+        # no JSON returned
+        return None
 
-    ## get the response from the Zendesk API
-    response = requests.get(url, auth=(user, pswd))
+    ## Update sessions
+    session['url'] = url
+    session['nextURL'] = jsonResponse['links']['next']
+    session['prevURL'] = jsonResponse['links']['prev']
+
+    session['statusCode'] = response.status_code
+    session['hasMore'] = jsonResponse['meta']['has_more']
 
     return response
 
 def getCountResponse():
     ## Set up the data needed for the Zendesk API request
-    subdomain = session['subdomain']
-    user = session['user']
-    pswd = session['pswd']
-    countURL = 'https://' + subdomain + '.zendesk.com/api/v2/tickets/count.json'
+    countURL = 'https://' + session['subdomain'] + '.zendesk.com/api/v2/tickets/count.json'
 
     ## get the response from the Zendesk API
-    countResponse = requests.get(countURL, auth=(user, pswd))
+    countResponse = requests.get(countURL, headers={'Authorization': 'Basic ' + session['basic']})
 
     return countResponse
 
-def getNextResponse(jsonResponse):
-    subdomain = session['subdomain']
-    user = session['user']
-    pswd = session['pswd']
-    hasMore = jsonResponse['meta']['has_more']
-    if (hasMore):
-        nextUrl = jsonResponse['links']['next']
-        session['url'] = nextUrl
-        response = requests.get(nextUrl, auth=(user, pswd))
-        nextJsonResponse = response.json()
-        session['statusCode'] = response.status_code
-        return nextJsonResponse
-    return None
 
 if __name__ == '__main__':
     app.run(host='localhost', port=3000)

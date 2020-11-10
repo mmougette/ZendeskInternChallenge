@@ -3,10 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>Zendesk Ticket</title>
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/ticketStyle.css') }}">
 </head>
 <body>
-    <h2>Ticket ID: {{ticket.id}} </h2>
-    <h2>Ticket Subject: {{ticket.subject}} </h2>
-    <h2>Ticket Content: {{ticket.description}} </h2>
+    <div class="ticket">
+        <h2>Ticket ID: {{ticket.id}} </h2>
+        <h3>Status: {{ticket.status}}   Priority: {{ticket.priority}}</h3>
+        <h3>Requested by {{ticket.requester_id}} on {{ticket.created_at}}</h3>
+        <h3>Ticket Subject: {{ticket.subject}} </h3>
+        <div class="content">
+            <h4>{{ticket.description}} </h4>
+        </div>
+        <form method="POST" action="/{{pageNum}}">
+            <input type="submit" value="Back To All Tickets">
+        </form>
+    </div>
 </body>
 </html>
