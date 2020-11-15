@@ -30,11 +30,17 @@ def home():
 
     ## Call the Zendesk API for tickets (w/ 25 peer page)
     response = getResponse(session['url'])
+    if (response == None):
+        return "Whoops! It looks like someone's lost!"
+
     jsonResponse = response.json()
     tickets = jsonResponse['tickets']
 
     ## Call Zendesk API for count.json
     countResponse = getCountResponse()
+    if (countResponse == None):
+        return "Whoops! It looks like someone's lost!"
+
     countJsonResponse = countResponse.json()
 
     ## one more session that can now be made after the count response
@@ -103,6 +109,8 @@ def getResponse(url):
     ## Check that the response is valid
     try:
         response = requests.get(url, headers={'Authorization': 'Basic ' + session['basic']})
+        if (response.status_code != 200):
+            return None
     except requests.exceptions.MissingSchema:
         return None
     ## Make sure the response is a json
@@ -130,7 +138,19 @@ def getCountResponse():
     countURL = 'https://' + session['subdomain'] + '.zendesk.com/api/v2/tickets/count.json'
 
     ## get the response from the Zendesk API
-    countResponse = requests.get(countURL, headers={'Authorization': 'Basic ' + session['basic']})
+    try:
+        ##response = requests.get(url, headers={'Authorization': 'Basic ' + session['basic']})
+        countResponse = requests.get(countURL, headers={'Authorization': 'Basic ' + session['basic']})
+        if (countResponse.status_code != 200):
+            return None
+    except requests.exceptions.MissingSchema:
+        return None
+    ## Make sure the response is a json
+    try:
+        jsonResponse = countResponse.json()
+    except ValueError:
+        # no JSON returned
+        return None
 
     return countResponse
 
